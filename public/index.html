@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AIDEN — Autonomous Financial Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:         #100700;
+    --surface:    #1E0D00;
+    --surface2:   #2C1500;
+    --border:     #3D1F00;
+    --gold:       #C8860A;
+    --gold-dim:   #8B5E1A;
+    --cream:      #F5E6C8;
+    --cream-dim:  #A0845C;
+    --success:    #6B8F3E;
+    --danger:     #8B1A1A;
+    --danger-dim: #5C1010;
+    --font-display: 'Cormorant Garamond', serif;
+    --font-mono:    'DM Mono', monospace;
+    --font-body:    'Inter', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--cream);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── GRAIN TEXTURE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 3rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(16, 7, 0, 0.85);
+    backdrop-filter: blur(12px);
+  }
+
+  .nav-logo {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+  }
+
+  .nav-logo span {
+    color: var(--cream-dim);
+    font-weight: 300;
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    display: block;
+    margin-top: -4px;
+    text-transform: uppercase;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2.5rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--cream-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--gold); }
+
+  .nav-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--success);
+    letter-spacing: 0.15em;
+  }
+
+  .pulse {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--success);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 8rem 3rem 4rem;
+    overflow: hidden;
+  }
+
+  /* Radial glow behind hero text */
+  .hero::after {
+    content: '';
+    position: absolute;
+    top: 30%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px; height: 400px;
+    background: radial-gradient(ellipse, rgba(200, 134, 10, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(4rem, 9vw, 8rem);
+    font-weight: 300;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    color: var(--cream);
+    max-width: 800px;
+  }
+
+  .hero-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-sub {
+    margin-top: 2rem;
+    font-size: 0.95rem;
+    font-weight: 300;
+    color: var(--cream-dim);
+    max-width: 480px;
+    line-height: 1.7;
+    letter-spacing: 0.02em;
+  }
+
+  .hero-actions {
+    margin-top: 3rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .btn-primary {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.9rem 2.2rem;
+    background: var(--gold);
+    color: var(--bg);
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    font-weight: 500;
+  }
+
+  .btn-primary:hover {
+    background: #E09A0F;
+    transform: translateY(-1px);
+  }
+
+  .btn-ghost {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.9rem 2.2rem;
+    background: transparent;
+    color: var(--cream-dim);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .btn-ghost:hover {
+    border-color: var(--gold-dim);
+    color: var(--cream);
+  }
+
+  /* ── TICKER STRIP ── */
+  .ticker {
+    position: relative;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    overflow: hidden;
+    height: 40px;
+    display: flex;
+    align-items: center;
+  }
+
+  .ticker-track {
+    display: flex;
+    gap: 0;
+    animation: ticker 30s linear infinite;
+    white-space: nowrap;
+  }
+
+  .ticker-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0 2.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    border-right: 1px solid var(--border);
+  }
+
+  .ticker-symbol { color: var(--gold); font-weight: 500; }
+  .ticker-price { color: var(--cream); }
+  .ticker-up { color: var(--success); }
+  .ticker-down { color: #C0392B; }
+
+  @keyframes ticker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* ── DASHBOARD ── */
+  .dashboard {
+    padding: 5rem 3rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 2.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── STAT CARDS ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    margin-bottom: 3rem;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.2s;
+  }
+
+  .stat-card:hover { background: var(--surface2); }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--border);
+    transition: background 0.2s;
+  }
+
+  .stat-card:first-child::before { background: var(--gold); }
+
+  .stat-label {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--cream-dim);
+    margin-bottom: 1rem;
+  }
+
+  .stat-value {
+    font-family: var(--font-display);
+    font-size: 2.8rem;
+    font-weight: 600;
+    color: var(--cream);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .stat-value.up { color: var(--success); }
+  .stat-value.down { color: #C0392B; }
+  .stat-value.gold { color: var(--gold); }
+
+  .stat-delta {
+    margin-top: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--cream-dim);
+  }
+
+  /* ── MAIN GRID ── */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 1px;
+    background: var(--border);
+    margin-bottom: 1px;
+  }
+
+  /* ── SIGNAL PANEL ── */
+  .panel {
+    background: var(--surface);
+    padding: 2rem;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.75rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .panel-title {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--cream-dim);
+  }
+
+  .regime-badge {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.8rem;
+    border: 1px solid;
+  }
+
+  .regime-trending { color: var(--gold); border-color: var(--gold-dim); }
+  .regime-ranging  { color: var(--cream-dim); border-color: var(--border); }
+  .regime-volatile { color: #C0392B; border-color: var(--danger); }
+
+  /* ── SIGNAL ROWS ── */
+  .signal-row {
+    display: grid;
+    grid-template-columns: 60px 1fr 90px 90px 80px 100px;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
+    gap: 1rem;
+    transition: background 0.15s;
+    cursor: default;
+  }
+
+  .signal-row:hover { background: rgba(200, 134, 10, 0.03); }
+  .signal-row:last-child { border-bottom: none; }
+
+  .signal-symbol {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--gold);
+    letter-spacing: 0.05em;
+  }
+
+  .signal-bar-wrap {
+    height: 3px;
+    background: var(--border);
+    border-radius: 0;
+    overflow: hidden;
+  }
+
+  .signal-bar {
+    height: 100%;
+    background: var(--gold);
+    transition: width 1s ease;
+  }
+
+  .signal-price {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--cream);
+    text-align: right;
+  }
+
+  .signal-change {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-align: right;
+  }
+
+  .signal-regime {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 0.2rem 0.5rem;
+    border: 1px solid var(--border);
+    color: var(--cream-dim);
+  }
+
+  .signal-action {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-align: right;
+    font-weight: 500;
+  }
+
+  .action-buy  { color: var(--success); }
+  .action-sell { color: #C0392B; }
+  .action-hold { color: var(--cream-dim); }
+
+  /* ── AUDIT LOG ── */
+  .audit-panel { background: var(--surface); padding: 2rem; }
+
+  .audit-entry {
+    padding: 0.9rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .audit-entry:last-child { border-bottom: none; }
+
+  .audit-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.4rem;
+  }
+
+  .audit-pair {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--cream);
+  }
+
+  .audit-time {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--cream-dim);
+  }
+
+  .audit-detail {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    color: var(--cream-dim);
+    line-height: 1.5;
+  }
+
+  .audit-tx {
+    font-size: 0.58rem;
+    color: var(--gold-dim);
+    margin-top: 0.3rem;
+    word-break: break-all;
+  }
+
+  /* ── CHAIN STATUS ── */
+  .chain-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+  }
+
+  .chain-card {
+    background: var(--surface);
+    padding: 1.75rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .chain-name {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--cream-dim);
+  }
+
+  .chain-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+  }
+
+  .dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .dot-active  { background: var(--success); animation: pulse 2s infinite; }
+  .dot-pending { background: var(--gold); }
+  .dot-idle    { background: var(--border); }
+
+  .chain-trades {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--cream);
+    line-height: 1;
+  }
+
+  .chain-pnl {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-left {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--cream-dim);
+  }
+
+  .footer-right {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    color: var(--gold-dim);
+    font-style: italic;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-eyebrow { animation: fadeUp 0.6s ease both; }
+  .hero-title   { animation: fadeUp 0.6s 0.1s ease both; }
+  .hero-sub     { animation: fadeUp 0.6s 0.2s ease both; }
+  .hero-actions { animation: fadeUp 0.6s 0.3s ease both; }
+
+  @media (max-width: 1024px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .main-grid  { grid-template-columns: 1fr; }
+    .chain-grid { grid-template-columns: 1fr; }
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+  }
+
+  @media (max-width: 640px) {
+    .hero { padding: 7rem 1.5rem 3rem; }
+    .dashboard { padding: 3rem 1.5rem; }
+    .stats-grid { grid-template-columns: 1fr; }
+    .signal-row { grid-template-columns: 50px 1fr 80px 70px; }
+    .signal-regime, .signal-bar-wrap { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    AIDEN
+    <span>Autonomous Financial Intelligence</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#dashboard">Dashboard</a></li>
+    <li><a href="#chains">Chains</a></li>
+    <li><a href="https://github.com/Isaaco3349/Aiden" target="_blank">GitHub</a></li>
+  </ul>
+  <div class="nav-status">
+    <div class="pulse"></div>
+    AGENT ACTIVE
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <p class="hero-eyebrow">BNB Chain · Solana · Stellar · Multi-chain</p>
+  <h1 class="hero-title">
+    One brain.<br/><em>Any chain.</em><br/>Real capital.
+  </h1>
+  <p class="hero-sub">
+    AIDEN is a regime-aware autonomous trading agent. It reads market signals, 
+    evaluates risk, and executes on-chain — without human intervention.
+  </p>
+  <div class="hero-actions">
+    <button class="btn-primary" onclick="document.getElementById('dashboard').scrollIntoView({behavior:'smooth'})">
+      View Dashboard
+    </button>
+    <button class="btn-ghost" onclick="window.open('https://github.com/Isaaco3349/Aiden','_blank')">
+      Read the Docs
+    </button>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track" id="tickerTrack">
+    <!-- duplicated for infinite loop -->
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<section class="dashboard" id="dashboard">
+
+  <!-- STATS -->
+  <div class="section-label">Live Performance</div>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Portfolio PnL</div>
+      <div class="stat-value gold" id="pnl">+0.00%</div>
+      <div class="stat-delta" id="pnlDelta">Initializing agent...</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Trades</div>
+      <div class="stat-value" id="totalTrades">0</div>
+      <div class="stat-delta" id="winRate">Win rate: —</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Max Drawdown</div>
+      <div class="stat-value down" id="drawdown">0.00%</div>
+      <div class="stat-delta">15% hard cap enforced</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Dominant Regime</div>
+      <div class="stat-value gold" id="regime" style="font-size:1.8rem">RANGING</div>
+      <div class="stat-delta" id="regimeDetail">Across all active pairs</div>
+    </div>
+  </div>
+
+  <!-- SIGNALS + AUDIT -->
+  <div class="main-grid">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Market Signals — BSC</span>
+        <span class="regime-badge regime-ranging" id="regimeBadge">RANGING</span>
+      </div>
+      <div id="signalRows">
+        <!-- injected by JS -->
+      </div>
+    </div>
+
+    <div class="audit-panel">
+      <div class="panel-header">
+        <span class="panel-title">Audit Log</span>
+      </div>
+      <div id="auditLog">
+        <div class="audit-entry">
+          <div class="audit-top">
+            <span class="audit-pair" style="color:var(--cream-dim)">Waiting for first cycle...</span>
+          </div>
+          <div class="audit-detail">Agent initializing signal ingestion</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHAIN STATUS -->
+  <div style="margin-top:1px">
+    <div class="chain-grid" id="chains">
+      <div class="chain-card">
+        <div class="chain-name">BNB Chain</div>
+        <div class="chain-status">
+          <div class="dot dot-active"></div>
+          <span style="color:var(--success)">Active — Trading</span>
+        </div>
+        <div class="chain-trades" id="bnbTrades">0</div>
+        <div class="chain-pnl" id="bnbPnl" style="color:var(--cream-dim)">PnL: initializing</div>
+      </div>
+      <div class="chain-card">
+        <div class="chain-name">Solana</div>
+        <div class="chain-status">
+          <div class="dot dot-pending"></div>
+          <span style="color:var(--gold)">Pending — Adapter deploy</span>
+        </div>
+        <div class="chain-trades">—</div>
+        <div class="chain-pnl" style="color:var(--cream-dim)">Swarms integration next</div>
+      </div>
+      <div class="chain-card">
+        <div class="chain-name">Stellar</div>
+        <div class="chain-status">
+          <div class="dot dot-idle"></div>
+          <span style="color:var(--cream-dim)">Idle — Soroban build queue</span>
+        </div>
+        <div class="chain-trades">—</div>
+        <div class="chain-pnl" style="color:var(--cream-dim)">SEA fintech layer incoming</div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">AIDEN v1.0 · BNB Hack 2026 · Agent Capital Hackathon · APAC Stellar</div>
+  <div class="footer-right">Intelligence over instinct.</div>
+</footer>
+
+<script>
+  // ── MOCK DATA (replaced by live API in production) ──
+  const mockSignals = [
+    { symbol: 'BNB',  price: 612.40, change: +2.84, liquidity: 0.92, regime: 'trending', action: 'BUY'  },
+    { symbol: 'ETH',  price: 3481.20, change: +1.23, liquidity: 0.88, regime: 'trending', action: 'BUY'  },
+    { symbol: 'CAKE', price: 2.67,   change: -0.91, liquidity: 0.61, regime: 'ranging',  action: 'HOLD' },
+    { symbol: 'USDT', price: 1.00,   change: +0.01, liquidity: 1.00, regime: 'ranging',  action: 'HOLD' },
+  ]
+
+  const mockAudit = [
+    { pair: 'BNB/USDT', side: 'BUY',  size: '12.4%', regime: 'TRENDING', tx: '0x4f3a...c291', time: '14:32:01' },
+    { pair: 'ETH/BNB',  side: 'BUY',  size: '9.8%',  regime: 'TRENDING', tx: '0x7b2e...a104', time: '14:27:14' },
+    { pair: 'CAKE/BNB', side: 'HOLD', size: '0%',    regime: 'RANGING',  tx: '—',           time: '14:22:05' },
+  ]
+
+  // ── RENDER SIGNALS ──
+  function renderSignals() {
+    const container = document.getElementById('signalRows')
+    container.innerHTML = mockSignals.map(s => `
+      <div class="signal-row">
+        <div class="signal-symbol">${s.symbol}</div>
+        <div class="signal-bar-wrap">
+          <div class="signal-bar" style="width:${s.liquidity * 100}%"></div>
+        </div>
+        <div class="signal-price">$${s.price.toLocaleString()}</div>
+        <div class="signal-change ${s.change >= 0 ? 'ticker-up' : 'ticker-down'}">
+          ${s.change >= 0 ? '+' : ''}${s.change}%
+        </div>
+        <div class="signal-regime">${s.regime}</div>
+        <div class="signal-action action-${s.action.toLowerCase()}">${s.action}</div>
+      </div>
+    `).join('')
+  }
+
+  // ── RENDER AUDIT LOG ──
+  function renderAudit() {
+    const container = document.getElementById('auditLog')
+    container.innerHTML = mockAudit.map(a => `
+      <div class="audit-entry">
+        <div class="audit-top">
+          <span class="audit-pair">
+            <span style="color:${a.side==='BUY'?'var(--success)':a.side==='SELL'?'#C0392B':'var(--cream-dim)'}">
+              ${a.side}
+            </span>
+            &nbsp;${a.pair}
+          </span>
+          <span class="audit-time">${a.time}</span>
+        </div>
+        <div class="audit-detail">Size: ${a.size} · Regime: ${a.regime}</div>
+        <div class="audit-tx">TX: ${a.tx}</div>
+      </div>
+    `).join('')
+  }
+
+  // ── TICKER ──
+  function buildTicker() {
+    const items = [
+      ...mockSignals,
+      { symbol: 'SOL',  price: 148.30, change: +3.21 },
+      { symbol: 'XLM',  price: 0.112,  change: -0.44 },
+      { symbol: 'BTC',  price: 67420,  change: +1.05 },
+    ]
+    const html = [...items, ...items].map(s => `
+      <div class="ticker-item">
+        <span class="ticker-symbol">${s.symbol}</span>
+        <span class="ticker-price">$${s.price.toLocaleString()}</span>
+        <span class="${s.change >= 0 ? 'ticker-up' : 'ticker-down'}">
+          ${s.change >= 0 ? '▲' : '▼'} ${Math.abs(s.change)}%
+        </span>
+      </div>
+    `).join('')
+    document.getElementById('tickerTrack').innerHTML = html
+  }
+
+  // ── SIMULATE LIVE STATS ──
+  let trades = 3, pnl = 4.23, drawdown = 1.2
+  function updateStats() {
+    const pnlEl = document.getElementById('pnl')
+    pnlEl.textContent = `+${pnl.toFixed(2)}%`
+    document.getElementById('pnlDelta').textContent = `+$${(pnl * 10).toFixed(2)} on $1,000 base`
+    document.getElementById('totalTrades').textContent = trades
+    document.getElementById('winRate').textContent = `Win rate: ${Math.round((trades * 0.72))}/${trades}`
+    document.getElementById('drawdown').textContent = `${drawdown.toFixed(2)}%`
+    document.getElementById('bnbTrades').textContent = trades
+    document.getElementById('bnbPnl').textContent = `PnL: +${pnl.toFixed(2)}% · Live window active`
+    document.getElementById('bnbPnl').style.color = 'var(--success)'
+
+    // Simulate small drift
+    pnl += (Math.random() - 0.3) * 0.08
+    drawdown = Math.max(0, drawdown + (Math.random() - 0.6) * 0.05)
+  }
+
+  // ── INIT ──
+  renderSignals()
+  renderAudit()
+  buildTicker()
+  updateStats()
+  setInterval(updateStats, 4000)
+</script>
+</body>
+</html>
