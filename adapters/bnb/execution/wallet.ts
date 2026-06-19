@@ -7,8 +7,7 @@ import { ethers } from 'ethers'
 
 // ── Provider + Signer setup ──
 const RPC_URL = process.env.BNB_RPC_URL || 'https://bsc-dataseed.binance.org/'
-const PRIVATE_KEY = process.env.WALLET_PRIVATE_KEY || ''
-
+const PRIVATE_KEY = process.env.BNB_WALLET_PRIVATE_KEY || ''
 if (!PRIVATE_KEY) {
   console.warn('[AIDEN] WARNING: WALLET_PRIVATE_KEY not set in .env')
 }

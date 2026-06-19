@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "description": "Autonomous Intelligent Decentralized Economic Network — one brain, any chain",
   "private": true,
-  "type": "module",
   "scripts": {
     "core:test": "tsx core/index.test.ts",
     "bnb:dev": "tsx adapters/bnb/index.ts",
@@ -15,11 +14,12 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.52.0",
     "ai": "^4.0.0",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.6.1",
     "ethers": "^6.16.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "ts-node": "^10.9.2",
     "tsx": "^4.0.0",
     "typescript": "^5.4.0"
   },

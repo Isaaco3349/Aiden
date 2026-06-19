@@ -1,6 +1,7 @@
 // ─────────────────────────────────────────────
 // AIDEN — BNB Adapter: CoinMarketCap Signal Ingestion
 // Fetches live quotes for BSC pairs and detects market regime
+// Uses only Basic-tier endpoints (quotes/latest)
 // ─────────────────────────────────────────────
 
 import type { MarketSignal, Regime } from '../../../shared/types'
@@ -16,6 +17,7 @@ interface CmcStatus {
 interface CmcQuoteUsd {
   price: number
   volume_24h: number
+  volume_change_24h: number
   percent_change_1h: number
   percent_change_24h: number
 }
@@ -28,13 +30,6 @@ interface CmcAssetQuote {
 interface CmcQuotesResponse {
   status: CmcStatus
   data: Record<string, CmcAssetQuote[]>
-}
-
-interface CmcOhlcvResponse {
-  status: CmcStatus
-  data: {
-    quotes: Array<{ quote: { USD: { volume: number } } }>
-  }
 }
 
 function getApiKey(): string | null {
@@ -92,52 +87,29 @@ async function fetchLatestQuotes(): Promise<Record<string, CmcAssetQuote[]> | nu
   return result?.data ?? null
 }
 
-async function fetch7DayAvgVolume(symbol: string): Promise<number> {
-  const result = await cmcGet<CmcOhlcvResponse>('/v2/cryptocurrency/ohlcv/historical', {
-    symbol,
-    convert: 'USD',
-    time_period: 'daily',
-    count: '7',
-  })
-
-  const candles = result?.data?.quotes ?? []
-  if (candles.length === 0) return 0
-
-  const totalVolume = candles.reduce(
-    (sum, candle) => sum + (candle.quote?.USD?.volume ?? 0),
-    0,
-  )
-
-  return totalVolume / candles.length
-}
-
+// ── Regime detection using only free-tier fields ──
 function detectRegime(
   percentChange1h: number,
   percentChange24h: number,
-  volume24h: number,
-  avgVolume7d: number,
+  volumeChange24h: number,
 ): Regime {
   if (Math.abs(percentChange1h) > 2) return 'volatile'
-  if (Math.abs(percentChange24h) > 3 && volume24h > avgVolume7d) return 'trending'
+  if (Math.abs(percentChange24h) > 3 && volumeChange24h > 0) return 'trending'
   return 'ranging'
 }
 
-function toMarketSignal(
-  symbol: string,
-  quote: CmcQuoteUsd,
-  avgVolume7d: number,
-): MarketSignal {
+function toMarketSignal(symbol: string, quote: CmcQuoteUsd): MarketSignal {
   const regime = detectRegime(
     quote.percent_change_1h,
     quote.percent_change_24h,
-    quote.volume_24h,
-    avgVolume7d,
+    quote.volume_change_24h,
   )
 
-  const liquidityScore =
-    avgVolume7d > 0
-      ? Math.min(1, quote.volume_24h / (avgVolume7d * 2))
-      : 0.5
+  // Liquidity proxy: positive volume change + magnitude scaled 0-1
+  const liquidityScore = Math.min(
+    1,
+    Math.max(0.1, 0.5 + quote.volume_change_24h / 100),
+  )
 
   return {
     symbol,
@@ -161,17 +133,6 @@ export async function fetchMarketSignals(): Promise<MarketSignal[]> {
     const quotes = await fetchLatestQuotes()
     if (!quotes) return []
 
-    const volumeAvgs = await Promise.all(
-      BNB_PAIRS.map(async (symbol) => ({
-        symbol,
-        avgVolume7d: await fetch7DayAvgVolume(symbol),
-      })),
-    )
-
-    const avgBySymbol = Object.fromEntries(
-      volumeAvgs.map(({ symbol, avgVolume7d }) => [symbol, avgVolume7d]),
-    )
-
     const signals: MarketSignal[] = []
 
     for (const symbol of BNB_PAIRS) {
@@ -183,7 +144,7 @@ export async function fetchMarketSignals(): Promise<MarketSignal[]> {
           continue
         }
 
-        signals.push(toMarketSignal(symbol, quote, avgBySymbol[symbol] ?? 0))
+        signals.push(toMarketSignal(symbol, quote))
       } catch (error) {
         console.error(`[cmc] Failed to transform signal for ${symbol}:`, error)
       }
