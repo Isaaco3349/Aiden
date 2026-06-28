@@ -2,9 +2,9 @@
 
 > One intelligent agent brain. Any chain. Real financial outcomes for real people.
 
-AIDEN is a production-grade autonomous financial intelligence system that reads live market signals, makes risk-adjusted decisions, and executes on-chain transactions — across BNB Chain, Solana, and Stellar — with zero human intervention required.
+AIDEN is a production-grade autonomous financial intelligence system that reads live market signals, makes risk-adjusted decisions, and executes on-chain transactions — across Solana and Stellar — with zero human intervention required.
 
-Built for the real world. Deployed on three chains. One brain.
+Built for the real world. Deployed across multiple chains. One brain.
 
 ---
 
@@ -14,86 +14,75 @@ Most crypto users can't act at machine speed. Signals move in milliseconds. Oppo
 
 AIDEN changes that. It is a chain-agnostic agent brain that:
 
-- **Reads** live market signals from CoinMarketCap's Agent Hub (regime, liquidity, risk flags)
+- **Reads** live market signals from CoinMarketCap's API (regime, liquidity, risk flags)
 - **Decides** using a strategy engine with built-in risk rules and drawdown protection
 - **Executes** autonomously via chain-specific adapters with full on-chain audit trails
 - **Coordinates** multi-agent workflows for complex capital operations
-- **Serves** real users in real markets — from BSC traders to Filipino OFW remittances
+- **Serves** real users in real markets — including Filipino OFW remittances
 
 ---
 
 ## Architecture
-
 ```
 aiden/
-├── core/                        # The brain — chain-agnostic, always running
-│   ├── signals/                 # CMC MCP signal ingestion & regime detection
-│   ├── strategy/                # Decision engine (trend, mean-reversion, regime-switch)
-│   └── risk/                    # Drawdown cap, position sizing, rule enforcement
+
+├── core/                # The brain — chain-agnostic, always running
+
+│   ├── signals/         # Market signal ingestion & regime detection
+
+│   ├── strategy/        # Decision engine (trend, mean-reversion, regime-switch)
+
+│   └── risk/            # Drawdown cap, position sizing, rule enforcement
+
 │
-├── adapters/                    # Chain-specific execution layers
-│   ├── bnb/                     # BNB AI Agent SDK + Trust Wallet Agent Kit
-│   ├── solana/                  # Swarms framework + Solana Web3.js
-│   └── stellar/                 # Stellar SDK + Soroban smart contracts
+
+├── adapters/            # Chain-specific execution layers
+
+│   ├── solana/          # Swarms framework + Solana Web3.js
+
+│   └── stellar/         # Stellar SDK + Soroban smart contracts
+
 │
-├── agents/                      # Orchestration layer — spawns & coordinates sub-agents
+
+├── agents/              # Orchestration layer — spawns & coordinates sub-agents
+
 │
-├── shared/
-│   ├── types/                   # Shared TypeScript interfaces across all adapters
-│   └── utils/                   # Logging, on-chain proof trail, formatting
-│
-└── submissions/                 # Tailored docs, demo scripts, judging materials
-    ├── bnbhack/
-    ├── agentcapital/
-    └── stellar/
+
+└── shared/
+
+├── types/           # Shared TypeScript interfaces across all adapters
+
+└── utils/           # Logging, on-chain proof trail, formatting
 ```
-
----
-
-## Hackathon Targets
-
-| Hackathon | Chain | Prize | Adapter | Status |
-|-----------|-------|-------|---------|--------|
-| BNB Hack: AI Trading Agent Edition | BSC | $10K 1st + $6K special | `adapters/bnb` | 🔨 Stage 2 |
-| Agent Capital Hackathon | Solana | $30K | `adapters/solana` | 🔨 Stage 3 |
-| APAC Stellar Hackathon 2026 | Stellar | $60K | `adapters/stellar` | 🔨 Stage 4 |
-| AgentOn Bounty | Multi | $100K pool | `agents/` | 🔨 Stage 5 |
-
 ---
 
 ## Build Stages
 
-### ✅ Stage 1 — Core Brain (current)
+### ✅ Stage 1 — Core Brain
 Chain-agnostic. No blockchain. Pure signal → decision → risk logic.
 Fully testable before a single on-chain transaction.
 
-### 🔨 Stage 2 — BNB Adapter
-Plug the core into BSC. CMC signals + Trust Wallet signing + BNB SDK execution.
-Target: BNB Hack submission by June 21, live trading June 22–28.
+### 🔨 Stage 2 — Initial Chain Adapter
+Plug the core brain into a live execution layer. Signal ingestion, wallet handling, and decentralized exchange execution.
 
 ### 🔜 Stage 3 — Solana Adapter
 Same core brain. Swarms multi-agent framework. Tokenized agent deployment on Solana.
-Target: Agent Capital Hackathon.
 
 ### 🔜 Stage 4 — Stellar Adapter
-Same core narrative. Soroban smart contracts. Mobile-first UI for SEA users.
-Target: APAC Stellar Hackathon 2026.
+Same core narrative. Soroban smart contracts. Mobile-first UI for Southeast Asian users.
 
 ### 🔜 Stage 5 — AgentOn Integration
-Existing autonomous agent discovers and completes bounty tasks for passive yield.
-Target: $100K AgentOn bounty pool.
+Existing autonomous agent discovers and completes bounty tasks on the AgentOn network for passive yield.
 
 ---
 
 ## Tech Stack
 
 - **Language:** TypeScript (Node.js 20+)
-- **Signal Layer:** CoinMarketCap MCP Server (12 tools)
-- **BNB Execution:** BNB AI Agent SDK + Trust Wallet Agent Kit (TWAK)
+- **Signal Layer:** CoinMarketCap API
 - **Solana Execution:** Swarms Framework + @solana/web3.js
 - **Stellar Execution:** @stellar/stellar-sdk + Soroban contracts
-- **Deployment:** Vercel (API routes) + GitHub Actions (CI)
-- **Agent Framework:** Vercel AI SDK (core orchestration)
+- **Deployment:** Render (background worker) + Vercel (dashboard UI)
 
 ---
 
@@ -116,13 +105,12 @@ AIDEN is not a demo. It targets real financial gaps — retail traders without i
 ## Getting Started
 
 ```bash
-git clone https://github.com/yourusername/aiden
+git clone https://github.com/Isaaco3349/Aiden
 cd aiden
 npm install
 cp .env.example .env
 # Add your CMC API key, wallet keys, RPC endpoints
-npm run core:test    # Test the brain with no chain connection
-npm run bnb:dev      # Start BNB adapter in dev mode
+npx ts-node index.ts
 ```
 
 ---
@@ -133,11 +121,6 @@ npm run bnb:dev      # Start BNB adapter in dev mode
 # CoinMarketCap
 CMC_API_KEY=
 
-# BNB Chain
-BNB_RPC_URL=https://bsc-dataseed.binance.org
-BNB_WALLET_PRIVATE_KEY=
-TRUST_WALLET_AGENT_KIT_KEY=
-
 # Solana
 SOLANA_RPC_URL=https://api.mainnet-beta.solana.com
 SOLANA_WALLET_PRIVATE_KEY=
@@ -147,9 +130,6 @@ SWARMS_API_KEY=
 STELLAR_NETWORK=mainnet
 STELLAR_SECRET_KEY=
 SOROBAN_RPC_URL=https://soroban-rpc.mainnet.stellar.gateway.fm
-
-# AgentOn
-AGENTON_API_KEY=
 ```
 
 ---
